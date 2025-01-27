@@ -1,7 +1,8 @@
 import React from 'react'
 import ObjectDetect from './components/ObjectDetection/ObjectDetect';
-import  HandPose  from './components/HandGestures/HandPose';
+import  HandPose  from './components/HandPose/HandPose';
 import FacialLandmark from './components/FacialLandmarkDetection/FacialLandmark';
+import PosenetRealTime from './components/PosenetRealTime/Pose';
 
 
 const App = () => {
@@ -10,6 +11,7 @@ const App = () => {
       <ObjectDetect />
       <HandPose/>
       <FacialLandmark />
+      <PosenetRealTime/>
     </div>
   )
 }

@@ -7,34 +7,26 @@
 // 7. Drawing utilities from tensorflow DONE
 // 8. Draw functions DONE
 
-// Face Mesh - https://github.com/tensorflow/tfjs-models/tree/master/facemesh
-
-import React, { useRef, useEffect } from "react";
+import React, { useRef } from "react";
 import * as tf from "@tensorflow/tfjs";
-// OLD MODEL
-//import * as facemesh from "@tensorflow-models/facemesh";
-
-// NEW MODEL
-import * as facemesh from "@tensorflow-models/facemesh";
+import * as posenet from "@tensorflow-models/posenet";
 import Webcam from "react-webcam";
-import { drawMesh } from "./Utility";
+import { drawKeypoints, drawSkeleton } from "./Utility";
 
-function FacialLandmark() {
+function App() {
   const webcamRef = useRef(null);
   const canvasRef = useRef(null);
 
   //  Load posenet
-  const runFacemesh = async () => {
-    // OLD MODEL
-    const net = await facemesh.load({
+  const runPosenet = async () => {
+    const net = await posenet.load({
       inputResolution: { width: 640, height: 480 },
       scale: 0.8,
     });
-    // NEW MODEL
-    // const net = await facemesh.load(facemesh.SupportedPackages.mediapipeFacemesh);
+    //
     setInterval(() => {
       detect(net);
-    }, 10);
+    }, 100);
   };
 
   const detect = async (net) => {
@@ -52,24 +44,24 @@ function FacialLandmark() {
       webcamRef.current.video.width = videoWidth;
       webcamRef.current.video.height = videoHeight;
 
-      // Set canvas width
-      canvasRef.current.width = videoWidth;
-      canvasRef.current.height = videoHeight;
-
       // Make Detections
-      // OLD MODEL
-            const face = await net.estimateFaces(video);
-      // NEW MODEL
-      // const face = await net.estimateFaces({input:video});
-      console.log(face);
+      const pose = await net.estimateSinglePose(video);
+      console.log(pose);
 
-      // Get canvas context
-      const ctx = canvasRef.current.getContext("2d");
-      requestAnimationFrame(()=>{drawMesh(face, ctx)});
+      drawCanvas(pose, video, videoWidth, videoHeight, canvasRef);
     }
   };
 
-  useEffect(()=>{runFacemesh()}, []);
+  const drawCanvas = (pose, video, videoWidth, videoHeight, canvas) => {
+    const ctx = canvas.current.getContext("2d");
+    canvas.current.width = videoWidth;
+    canvas.current.height = videoHeight;
+
+    drawKeypoints(pose["keypoints"], 0.6, ctx);
+    drawSkeleton(pose["keypoints"], 0.7, ctx);
+  };
+
+  runPosenet();
 
   return (
     <div className="App">
@@ -108,4 +100,4 @@ function FacialLandmark() {
   );
 }
 
-export default FacialLandmark;
+export default App;

@@ -2,42 +2,34 @@
 // 2. Import dependencies DONE
 // 3. Setup webcam and canvas DONE
 // 4. Define references to those DONE
-// 5. Load posenet DONE
+// 5. Load handpose DONE
 // 6. Detect function DONE
-// 7. Drawing utilities from tensorflow DONE
+// 7. Drawing utilities DONE
 // 8. Draw functions DONE
 
-// Face Mesh - https://github.com/tensorflow/tfjs-models/tree/master/facemesh
-
-import React, { useRef, useEffect } from "react";
+import React, { useRef } from "react";
+// import logo from './logo.svg';
 import * as tf from "@tensorflow/tfjs";
-// OLD MODEL
-//import * as facemesh from "@tensorflow-models/facemesh";
-
-// NEW MODEL
-import * as facemesh from "@tensorflow-models/facemesh";
+import * as handpose from "@tensorflow-models/handpose";
 import Webcam from "react-webcam";
-import { drawMesh } from "./Utility";
 
-function FacialLandmark() {
+import { drawHand } from "./utilities";
+
+function App() {
   const webcamRef = useRef(null);
   const canvasRef = useRef(null);
 
-  //  Load posenet
-  const runFacemesh = async () => {
-    // OLD MODEL
-    const net = await facemesh.load({
-      inputResolution: { width: 640, height: 480 },
-      scale: 0.8,
-    });
-    // NEW MODEL
-    // const net = await facemesh.load(facemesh.SupportedPackages.mediapipeFacemesh);
+  const runHandpose = async () => {
+    const net = await handpose.load();
+    console.log("Handpose model loaded.");
+    //  Loop and detect hands
     setInterval(() => {
       detect(net);
-    }, 10);
+    }, 100);
   };
 
   const detect = async (net) => {
+    // Check data is available
     if (
       typeof webcamRef.current !== "undefined" &&
       webcamRef.current !== null &&
@@ -52,24 +44,21 @@ function FacialLandmark() {
       webcamRef.current.video.width = videoWidth;
       webcamRef.current.video.height = videoHeight;
 
-      // Set canvas width
+      // Set canvas height and width
       canvasRef.current.width = videoWidth;
       canvasRef.current.height = videoHeight;
 
       // Make Detections
-      // OLD MODEL
-            const face = await net.estimateFaces(video);
-      // NEW MODEL
-      // const face = await net.estimateFaces({input:video});
-      console.log(face);
+      const hand = await net.estimateHands(video);
+      console.log(hand);
 
-      // Get canvas context
+      // Draw mesh
       const ctx = canvasRef.current.getContext("2d");
-      requestAnimationFrame(()=>{drawMesh(face, ctx)});
+      drawHand(hand, ctx);
     }
   };
 
-  useEffect(()=>{runFacemesh()}, []);
+  runHandpose();
 
   return (
     <div className="App">
@@ -108,4 +97,4 @@ function FacialLandmark() {
   );
 }
 
-export default FacialLandmark;
+export default App;
