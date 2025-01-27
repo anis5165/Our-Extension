@@ -7,8 +7,8 @@ import  HandPose  from './components/HandGestures/HandPose';
 const App = () => {
   return (
     <div>
-      {/* <ObjectDetect /> */}
-      <HandPose/>
+      <ObjectDetect />
+      {/* <HandPose/> */}
       {/* <FacialLandmark /> */}
     </div>
   )
